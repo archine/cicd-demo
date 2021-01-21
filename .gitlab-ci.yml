@@ -37,7 +37,7 @@ variables:
       - target/*.jar
 构建镜像:
   stage: build
-  image: docker:stable
+  image: registry.onesport.com.cn/docker/ci-tool:1.0
   script:
     # 这里的变量会自动获取你当前推送代码的gitlab用户和密码以及仓库地址
     - docker login --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -51,7 +51,7 @@ variables:
   tags:
     - test
 运行:
-  image: docker:stable
+  image: registry.onesport.com.cn/docker/ci-tool:1.0
   stage: run
   script:
     - docker run -d --name $PROJECT -p 7777:7777 $IMAGE_FULL_NAME
