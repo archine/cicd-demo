@@ -1,0 +1,60 @@
+# 全局脚本，会运行在各个阶段的script前，如果某个阶段里面存在before_script，那么以那个阶段里的为主
+before_script:
+  # 这里定义了打包成功后的Docker镜像名称，每一次提交代码后构建成功的镜像名称都是唯一的
+  - export IMAGE_FULL_NAME=${CI_REGISTRY_IMAGE}:${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHA}
+
+# 定义CI执行的阶段，这里可以自己根据情况定义多少个阶段
+stages:
+  - compile
+  - build
+  - run_dev
+# 定义全局变量
+variables:
+  PROJECT: "ci-demo"
+  # 这里定义了Maven的jar包存放地址，与我们构建maven私服的时候设置的存放地址一致
+  MAVEN_REPO: "/.m2"
+编译:
+  # 当前阶段的执行镜像
+  image: 172.20.9.3:5001/root/maven:latest
+  # 属于上面定义的哪一个阶段
+  stage: compile
+  # 是否允许失败，允许的话如果当前阶段运行失败还会继续执行下一个阶段
+  allow_failure: false
+  # 只在哪个分支生效
+  only:
+    - master
+  # 这里就是你要选择哪个runner来执行了，填写我们创建runner时候指定的标签
+  tags:
+    - test
+  # 运行脚本
+  script:
+    - mvn -Dmaven.repo.local=$MAVEN_REPO clean package -Dmaven.test.skip=true
+  # 因为是Maven编译，所以会有Jar包产物，这里定义产物的过期时间
+  artifacts:
+    name: $PROJECT
+    expire_in: 1 days
+    paths:
+      - target/*.jar
+构建镜像:
+  stage: build
+  script:
+    # 这里的变量会自动获取你当前推送代码的gitlab用户和密码以及仓库地址
+    - docker login --username $CI_REGISTRY_USER --password $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    # 这里的变量就是我们全局配置定义的了
+    - docker build -t $IMAGE_FULL_NAME .
+    - docker push $IMAGE_FULL_NAME
+    - rm -rf target
+    - docker rmi $IMAGE_FULL_NAME
+  only:
+    - master
+  tags:
+    - test
+运行:
+  image: docker:stable
+  stage: run
+  script:
+    - docker run -d --name $PROJECT -p 7777:7777 $IMAGE_FULL_NAME
+  only:
+    - master
+  tags:
+    - test
