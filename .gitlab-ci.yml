@@ -25,7 +25,7 @@ variables:
     - master
   # 这里就是你要选择哪个runner来执行了，填写我们创建runner时候指定的标签
   tags:
-    - test
+    - k8stest
   # 运行脚本
   script:
     - mvn -Dmaven.repo.local=$MAVEN_REPO clean package -Dmaven.test.skip=true
@@ -48,7 +48,7 @@ variables:
   only:
     - master
   tags:
-    - test
+    - k8stest
 运行:
   image: docker:stable
   stage: run
@@ -57,4 +57,4 @@ variables:
   only:
     - master
   tags:
-    - test
+    - k8stest
