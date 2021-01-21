@@ -7,7 +7,7 @@ before_script:
 stages:
   - compile
   - build
-  - run_dev
+  - run
 # 定义全局变量
 variables:
   PROJECT: "ci-demo"
