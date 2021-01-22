@@ -32,7 +32,7 @@ variables:
   # 因为是Maven编译，所以会有Jar包产物，这里定义产物的过期时间
   artifacts:
     name: $PROJECT
-    expire_in: 1 days
+    expire_in: 7 days
     paths:
       - target/*.jar
 构建镜像:
