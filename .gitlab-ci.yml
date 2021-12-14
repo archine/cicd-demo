@@ -55,6 +55,11 @@ variables:
   image: docker:stable
   stage: run
   script:
+    - CONTAINER_NAME=$(docker ps -aq --filter name=$PROJECT)
+    - echo $CONTAINER_NAME
+    - if [[ -n "$CONTAINER_NAME" ]]; then
+      docker rm -f $CONTAINER_NAME;
+      fi
     - docker run -d --name $PROJECT -p 7777:7777 $IMAGE_FULL_NAME
   only:
     - master
